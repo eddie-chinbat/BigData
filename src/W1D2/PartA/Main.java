@@ -20,7 +20,7 @@ public class Main {
             mappedWords = map(text.next().toLowerCase());
         text.close();
 
-        System.out.println("Mapper Output111");
+        System.out.println("Mapper Output");
         //noinspection ConstantConditions
         mappedWords.forEach(System.out::println);
     }
