@@ -1,21 +1,21 @@
 /* *****************************************************************
  * @SID      610575
  * @Author   ERDENEBAYAR CHINBAT
- * @Created  Oct 29, 2019
+ * @Created  Oct 28, 2019
  ******************************************************************/
 
-package W1D2.PartA;
+package W1D3;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Scanner;
-import java.io.FileNotFoundException;
-import static W1D2.PartA.Mapper.map;
+
+import static W1D3.Mapper.map;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         List<Pair> mappedWords = null;
-        List<GroupByPair> reducerInput = null;
         Scanner text = new Scanner(new File("./src/W1D1/testDataForW1D1.txt"));
         while (text.hasNextLine())
             mappedWords = map(text.next().toLowerCase());
@@ -25,7 +25,7 @@ public class Main {
         //noinspection ConstantConditions
         mappedWords.forEach(System.out::println);
 
-        System.out.println("Reducer Input");
-//        reducerInput.add(mappedWords);
+        InMapperWordCount inMapperWCObj = new InMapperWordCount(4,3);
+        inMapperWCObj.print();
     }
 }
