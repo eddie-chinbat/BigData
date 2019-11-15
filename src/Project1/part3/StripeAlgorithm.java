@@ -6,7 +6,7 @@
 *
 ******************************************************************/
 
-package part3;
+package Project1.part3;
 
 import java.util.*;
 import java.util.Map.Entry;

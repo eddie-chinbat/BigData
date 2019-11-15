@@ -6,14 +6,14 @@
 *
 ******************************************************************/
 
-package part4;
+package Project1.part2;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.apache.hadoop.io.*;
+import org.apache.log4j.Logger;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.*;
@@ -22,19 +22,16 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class PMSRAlgorithm {
+public class PairAlgorithm {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
      
         @SuppressWarnings("deprecation")
-        Job job = new Job(conf, "PMSRAlgorithm");
-        job.setJarByClass(PMSRAlgorithm.class);
+        Job job = new Job(conf, "PairAlgorithm");
+        job.setJarByClass(PairAlgorithm.class);
          
         job.setMapOutputKeyClass(PairKey.class);
         job.setMapOutputValueClass(IntWritable.class);
-        
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(MyMap.class);
          
         job.setMapperClass(MyMapper.class);
         job.setReducerClass(MyReduce.class);
@@ -48,9 +45,10 @@ public class PMSRAlgorithm {
         job.waitForCompletion(true);
     }
     
-  //Beginning of Mapper class
+    //Beginning of Mapper class
     public static class MyMapper extends Mapper<LongWritable, Text, PairKey, IntWritable> {
         private Map<PairKey, Integer> myHash = new HashMap<PairKey, Integer>();
+        private Logger log = Logger.getLogger(MyMapper.class);
         
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException { 
             String line = value.toString();
@@ -80,6 +78,7 @@ public class PMSRAlgorithm {
                 throws IOException, InterruptedException {
             // TODO Auto-generated method stub
             for (Map.Entry<PairKey, Integer> entry : myHash.entrySet())  {
+                log.info("(" + entry.getKey() + ", " + entry.getValue() + ")");
                 context.write(entry.getKey(), new IntWritable(entry.getValue())); 
             }
             super.cleanup(context);
@@ -87,51 +86,16 @@ public class PMSRAlgorithm {
     } //End of Mapper class
 
     //Beginning of Reduce class
-// Pseudo code that Professor wrote on board today    
-//    Class Reducer
-//    method Initialize
-//        uprev <- 0, H = new AssociatedArray
-//    method reduce((u,v), [c1,c2,...])
-//        sum = 0
-//        for all c in [c1,c2,...] dp
-//            sum += c
-//
-//        if(uprev <> u and uprev <> 0)
-//            total = Total(H)  // add all values in H
-//            H <- H | total
-//            Emit(uprev, H)
-//            H <- AssociatedArray
-//        H{v} <- sum
-//        uprev <- u
-//    method close
-//        total = Total(H)
-//        H <- H | total
-//        Emit(uprev, H)
-    public static class MyReduce extends Reducer<PairKey, IntWritable, Text, MyMap> {
-        private Text uprev = null;
-        private MyMap H = new MyMap();
-        private int total = 0;
-        
+    public static class MyReduce extends Reducer<PairKey, IntWritable, PairKey, FloatWritable> {
+        private float total = 0.0f;
         public void reduce(PairKey key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            if(!key.getFirst().equals(uprev) && uprev != null) {
-                for(Entry<Writable, Writable> entry : H.entrySet()){
-                    total += ((IntWritable)entry.getValue()).get();   
-                }
-                for(Entry<Writable, Writable> entry : H.entrySet()){
-                    entry.setValue(new DoubleWritable(((IntWritable)entry.getValue()).get() / (double)total));
-                }
-//                if(!key.getFirst().equals(new Text("*")))
-                context.write(uprev, H);
-                H = new MyMap();
-            }
-            
             int sum = 0;
             
-            for (IntWritable value : values) {
-                sum += value.get();
-            }
-            H.put(new Text(key.getSecond()), new IntWritable(sum));
-            uprev = new Text(key.getFirst());
+            for (IntWritable val : values)
+                sum += val.get(); 
+            
+            if(key.getSecond().equals(new Text("*"))) total = sum;       //Add all values in H
+            else context.write(key, new FloatWritable(sum / total));
         }
     } //End of Reduce class
 }
@@ -203,18 +167,5 @@ class PairKey implements WritableComparable<PairKey> {
         if (cmp != 0) return cmp;
         
         return second.compareTo(tp.second);
-    }
-}
-
-class MyMap extends MapWritable {
-    @Override
-    public String toString() {
-        StringBuilder result = new StringBuilder();
-        Set<Writable> keySet = this.keySet();
-
-        for (Object key : keySet)
-            result.append("[" + key.toString() + ", " + this.get(key) + "]");
-        
-        return result.toString();
     }
 }
