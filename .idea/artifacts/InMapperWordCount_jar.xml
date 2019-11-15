@@ -7,6 +7,9 @@
         <element id="extracted-dir" path="$PROJECT_DIR$/hadoop-common-2.7.3.jar" path-in-jar="/" />
         <element id="file-copy" path="$PROJECT_DIR$/src/org/myorg/InMapperWordCount.java" />
       </element>
+      <element id="extracted-dir" path="$PROJECT_DIR$/hadoop-mapreduce-client-core-2.7.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/hadoop-common-2.7.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/log4j-1.2.15.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
